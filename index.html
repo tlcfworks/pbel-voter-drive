@@ -169,6 +169,12 @@
             position: relative;
             z-index: 2;
         }
+        #should-i-visit {
+            background-image: url('https://i.ibb.co/q3BSKRXF/Should-You-Visit.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-color: white;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -202,7 +208,7 @@
         <!-- Section 2: The Problem We Face -->
         <section id="problem" class="slide">            
             <div class="filmstrip-viewport"> 
-                <div class="text-center absolute w-full top-32 z-10 px-4">
+                <div class="text-center absolute w-full top-24 z-10 px-4">
                     <h2 class="text-white text-4xl md:text-6xl font-black" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">The Problem?</h2>               
                     <p class="text-xl md:text-2xl font-semibold mt-4 text-saffron" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">Our collective inaction has led to significant civic challenges</p>
                 </div>
@@ -257,10 +263,7 @@
         </section>
 
         <!-- Section 3.5: Should I Visit? -->
-        <section id="should-i-visit" class="slide bg-white">
-            <div class="w-[90%] h-[90%] flex justify-center items-center">
-                 <img src="https://i.ibb.co/q3BSKRXF/Should-You-Visit.png" alt="A guide to check if you need to update voter ID details." class="max-w-full max-h-full object-contain">
-            </div>
+        <section id="should-i-visit" class="slide">
         </section>
 
         <!-- Section 4: What We Will Do -->
@@ -345,7 +348,10 @@
                 
                 // Update side nav colors based on the current slide's background
                 const isDarkSlide = slides[slideIndex].classList.contains('text-white') || slides[slideIndex].querySelector('.filmstrip-viewport');
-                const dotColor = isDarkSlide ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)';
+                let dotColor = isDarkSlide ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)';
+                if (slides[slideIndex].id === 'should-i-visit' || slides[slideIndex].id === 'action') {
+                    dotColor = 'rgba(0, 0, 0, 0.3)';
+                }
                 document.documentElement.style.setProperty('--dot-bg-color', dotColor);
 
                 // Manage Section 2 animation
