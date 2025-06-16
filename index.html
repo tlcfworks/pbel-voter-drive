@@ -212,7 +212,7 @@
         /* --- Guide Section Slider --- */
         .guide-arrow {
             position: absolute;
-            top: 50%;
+            top: 80%;
             transform: translateY(-50%);
             z-index: 30;
             background-color: rgba(255, 255, 255, 0.8);
@@ -610,10 +610,6 @@
             let currentPanel = 0;
             const totalPanels = 4;
 
-            // --- Filmstrip Dot Elements ---
-            const filmstripDotContainer = document.getElementById('filmstrip-dots');
-            let filmstripDots = [];
-
             // --- Create Navigation Dots ---
             for (let i = 0; i < totalSlides; i++) {
                 const dot = document.createElement('div');
@@ -623,58 +619,25 @@
             }
             const dots = document.querySelectorAll('.dot');
 
-            // --- Section 2 Filmstrip Animation & Dots ---
+            // --- Section 2 Filmstrip Animation ---
             function stopFilmstripAnimation() {
                 if(section2Timer) {
                     clearInterval(section2Timer);
                     section2Timer = null;
                 }
             }
-            
-            function updateFilmstrip(frameIndex) {
-                 const filmstrip = document.querySelector('#problem .filmstrip');
-                 if(filmstrip) {
-                    filmstrip.style.transform = `translateX(-${frameIndex * (100 / 4)}%)`;
-                 }
-                 filmstripDots.forEach((dot, index) => {
-                    dot.classList.toggle('active', index === frameIndex);
-                });
-            }
 
             function startFilmstripAnimation() {
                 stopFilmstripAnimation(); // Reset first
                 const filmstrip = document.querySelector('#problem .filmstrip');
                 if (!filmstrip) return;
-
+                
                 let currentFrame = 0;
                 const totalFrames = filmstrip.children.length;
 
-                // Create filmstrip dots if not already created
-                if (filmstripDotContainer && filmstripDotContainer.children.length === 0) {
-                    for(let i=0; i < totalFrames; i++) {
-                        const dot = document.createElement('div');
-                        dot.classList.add('filmstrip-dot');
-                        dot.dataset.frame = i;
-                        filmstripDotContainer.appendChild(dot);
-                    }
-                    filmstripDots = Array.from(filmstripDotContainer.children);
-                     filmstripDots.forEach(dot => {
-                        dot.addEventListener('click', (e) => {
-                           const frameIndex = parseInt(e.target.dataset.frame);
-                           currentFrame = frameIndex;
-                           updateFilmstrip(frameIndex);
-                           // Reset timer to avoid immediate slide change
-                           stopFilmstripAnimation();
-                           startFilmstripAnimation();
-                        });
-                    });
-                }
-                
-                updateFilmstrip(currentFrame);
-
                 section2Timer = setInterval(() => {
                     currentFrame = (currentFrame + 1) % totalFrames;
-                    updateFilmstrip(currentFrame);
+                    filmstrip.style.transform = `translateX(-${currentFrame * (100 / totalFrames)}%)`;
                 }, 10000); // Change slide every 10 seconds
             }
             
@@ -708,7 +671,7 @@
                 document.documentElement.style.setProperty('--dot-bg-color', dotColor);
 
                 // Manage Section 2 animation
-                if (slides[slideIndex].id === 'problem') { // problem section
+                if (slideIndex === 1) { // problem section
                     startFilmstripAnimation(); 
                 } else {
                     stopFilmstripAnimation();
@@ -747,11 +710,27 @@
 
             window.addEventListener('wheel', (e) => {
                 if (isScrolling) return;
-                // If we are on a slide with its own scroll, disable page scroll
-                 if (slides[currentSlide].id === 'guide' || slides[currentSlide].id === 'documents') {
+
+                const currentSlideEl = slides[currentSlide];
+                const isScrollableSlide = currentSlideEl.id === 'guide' || currentSlideEl.id === 'documents';
+
+                if (isScrollableSlide) {
+                    // Check if the scrollable element is at the top or bottom
+                    const atTop = currentSlideEl.scrollTop === 0;
+                    const atBottom = Math.ceil(currentSlideEl.scrollTop + currentSlideEl.clientHeight) >= currentSlideEl.scrollHeight;
+
+                    if (e.deltaY < 0 && atTop) {
+                        // If scrolling up at the top, navigate to previous slide
+                        navigateToSlide(currentSlide - 1);
+                    } else if (e.deltaY > 0 && atBottom) {
+                        // If scrolling down at the bottom, navigate to next slide
+                        navigateToSlide(currentSlide + 1);
+                    }
+                    // Otherwise, allow the native scroll within the slide
                     return;
                 }
-
+                
+                // Default behavior for non-scrollable slides
                 if (e.deltaY > 0) navigateToSlide(currentSlide + 1); // Down
                 else navigateToSlide(currentSlide - 1); // Up
             });
@@ -765,12 +744,25 @@
             let touchstartY = 0;
             window.addEventListener('touchstart', e => { touchstartY = e.changedTouches[0].screenY; }, { passive: true });
             window.addEventListener('touchend', e => {
-                let touchendY = e.changedTouches[0].screenY;
                 if (isScrolling) return;
-                // If we are on a slide with its own scroll, disable page swipe
-                 if (slides[currentSlide].id === 'guide' || slides[currentSlide].id === 'documents') {
+
+                const currentSlideEl = slides[currentSlide];
+                const isScrollableSlide = currentSlideEl.id === 'guide' || currentSlideEl.id === 'documents';
+
+                let touchendY = e.changedTouches[0].screenY;
+
+                 if (isScrollableSlide) {
+                    const atTop = currentSlideEl.scrollTop === 0;
+                    const atBottom = Math.ceil(currentSlideEl.scrollTop + currentSlideEl.clientHeight) >= currentSlideEl.scrollHeight;
+
+                    if (touchendY > touchstartY + 50 && atTop) { // Swiped down
+                        navigateToSlide(currentSlide - 1);
+                    } else if (touchendY < touchstartY - 50 && atBottom) { // Swiped up
+                        navigateToSlide(currentSlide + 1);
+                    }
                     return;
                 }
+
                 if (touchendY < touchstartY - 50) navigateToSlide(currentSlide + 1); // Swiped up
                 if (touchendY > touchstartY + 50) navigateToSlide(currentSlide - 1); // Swiped down
             });
