@@ -1,1 +1,431 @@
-It Works
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PBEL City Voter Registration Drive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevents default browser scrollbar */
+        }
+        /* Saffron: #FF9933, White: #FFFFFF, Green: #138808 */
+        .bg-saffron { background-color: #FF9933; }
+        .text-saffron { color: #FF9933; }
+        .border-saffron { border-color: #FF9933; }
+
+        .bg-green { background-color: #138808; }
+        .text-green { color: #138808; }
+        .border-green { border-color: #138808; }
+        
+        .section-icon {
+            font-size: 2.5rem; /* 40px */
+            line-height: 1;
+        }
+
+        #fullpage-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.8s ease-in-out;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 2rem;
+            box-sizing: border-box;
+            position: relative;
+        }
+        
+        #problem.slide, #vision.slide, #action.slide, #kiosk.slide, #should-i-visit.slide {
+            padding: 0; /* Remove padding for full-screen viewports */
+        }
+
+        #dot-navigation {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            background-color: var(--dot-bg-color, rgba(0, 0, 0, 0.3));
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .dot.active {
+            background-color: #FF9933;
+        }
+
+        /* --- Animation --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translate3d(0, 40px, 0); }
+            to { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+
+        .animated-element { opacity: 0; }
+        
+        /* Section 1 Animations */
+        .slide#about.is-active .animated-element {
+            animation-name: fadeInUp;
+            animation-duration: 2s;
+            animation-fill-mode: both;
+            animation-timing-function: ease-in-out;
+        }
+        .slide#about.is-active .animated-element.delay-1 { animation-delay: 2.0s; }
+        .slide#about.is-active .animated-element.delay-2 { animation-delay: 4.0s; }
+        
+        /* Section 2 Animations */
+        .filmstrip-viewport {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: relative; /* Needed for absolute title positioning */
+        }
+        .filmstrip {
+            width: 400%; /* 100% per card */
+            height: 100%;
+            display: flex;
+            transition: transform 2s cubic-bezier(0.77, 0, 0.175, 1);
+        }
+        .filmstrip-frame {
+            width: 25%; /* 1/4 of the filmstrip width */
+            height: 100%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            background-size: cover;
+            background-position: center;
+        }
+        .filmstrip-frame::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.4); /* Reduced overlay darkness */
+            z-index: 1;
+        }
+        .filmstrip-text {
+            position: relative;
+            z-index: 2;
+            color: white;
+            text-align: center;
+            font-size: 1.5rem;
+            line-height: 2.25rem;
+            font-weight: 600;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+            max-width: 90%;
+        }
+        
+        /* --- Background Images & Overlays --- */
+        #about, #vision, #kiosk {
+            background-size: cover;
+            background-position: center;
+        }
+        #about {
+            background-image: url('https://i.ibb.co/tP4HcLs0/Section1.png');
+        }
+         #vision {
+            background-image: url('https://i.ibb.co/fzJ24VqY/Section3.png');
+        }
+        #action {
+             background-image: url('https://i.ibb.co/svPBzTQk/Simple-Process-For-Residents.png');
+             background-size: contain;
+             background-repeat: no-repeat;
+             background-color: white;
+			 background-position: center 80px; /* Push image down */													
+        }
+        #kiosk {
+            background-image: url('https://i.ibb.co/d4YV0RsG/Section5.png');
+        }
+
+        #about::before, #vision::before, #kiosk::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.4); /* Reduced overlay darkness */
+            z-index: 1;
+        }
+        #about .content-wrapper, #vision .container, #kiosk .container {
+            position: relative;
+            z-index: 2;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
+        <nav class="container mx-auto px-6 py-3 text-center">
+            <h1 class="text-lg md:text-xl font-bold">
+                <span class="title-saffron text-saffron">PBEL City</span>
+                <span class="title-gray text-gray-700"> Votes</span>
+                <span class="title-green text-green"> for Change</span>
+            </h1>
+            <p class="subtitle text-xs md:text-sm text-gray-600 mt-1">Vote Where You Live, Shape Where You Belong</p>
+        </nav>
+    </header>
+    
+    <!-- Dot Navigation -->
+    <div id="dot-navigation"></div>
+
+    <!-- Main Content Container -->
+    <div id="fullpage-container">
+        <!-- Section 1: What is this about? -->
+        <section id="about" class="slide">
+            <div class="content-wrapper container mx-auto px-6 text-center text-white">
+                <h2 class="animated-element delay-1 text-4xl md:text-6xl font-black mb-5" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">Make Our Community Count</h2>
+                <h3 class="animated-element text-xl md:text-2xl font-semibold mb-4 text-saffron" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">Voter ID Update & Registration Drive</h3>
+                <p class="animated-element delay-2 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed" style="color: rgba(255,255,255,0.9);">This is more than a campaign; it's a movement to put PBEL City on the map. Updating your Voter ID isn’t just paperwork - it’s power.</p>
+            </div>
+        </section>
+
+        <!-- Section 2: The Problem We Face -->
+        <section id="problem" class="slide">            
+            <div class="filmstrip-viewport"> 
+                <div class="text-center absolute w-full top-32 z-10 px-4">
+                    <h2 class="text-white text-4xl md:text-6xl font-black" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">The Problem?</h2>               
+                    <p class="text-xl md:text-2xl font-semibold mt-4 text-saffron" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">Our collective inaction has led to significant civic challenges</p>
+                </div>
+                <div class="filmstrip">
+                    <div class="filmstrip-frame" style="background-image: url('https://i.ibb.co/F41ny0xH/Section2-Polling-Booth.png')">
+                        
+                        <p class="filmstrip-text"> <span class="text-4xl font-extrabold"> Absence of Local Visibility - </span>
+                        Most residents still vote in other constituencies,<span class="text-saffron"> making PBEL City invisible </span>in local electoral data and planning.</p>
+                    </div>
+                    <div class="filmstrip-frame" style="background-image: url('https://i.ibb.co/xSRxxHrR/Section2-Bad-Infrastructure.png')">
+                        
+                         <p class="filmstrip-text"><span class="text-4xl font-extrabold"> Broken Infrastructure Promises - </span>
+                          From pothole ridden roads to unreliable public utilities, civic projects bypass our community due to <span class="text-saffron">lack of voter pressure. </span></p>
+                    </div>
+                    <div class="filmstrip-frame" style="background-image: url('https://i.ibb.co/rKLnz9K5/Section2-Dirty-Lake.png')">
+                        
+                         <p class="filmstrip-text"><span class="text-4xl font-extrabold"> Community Voice Without Collective Weight - </span>
+                          We raise issues on forums, but without electoral backing, our concerns <span class="text-saffron">carry little weight with local authorities.</span></p>
+                    </div>
+                    <div class="filmstrip-frame" style="background-image: url('https://i.ibb.co/YTFBP4vV/Section2-Badroad.png')">
+                        
+                        <p class="filmstrip-text"><span class="text-4xl font-extrabold"> Delayed Civic Development - </span>
+                         Projects like street lighting, lake preservation, and footpaths are deprioritized because <span class="text-saffron">PBEL is not seen as a unified electoral bloc.</span></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: The Vision -->
+        <section id="vision" class="slide text-white">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-white text-4xl md:text-6xl font-black mb-4" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.5);">The Vision</h2>
+                <p class="text-xl md:text-2xl font-semibold mt-4 text-saffron max-w-3xl mx-auto mb-12" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">A future where PBEL City sets the benchmark for civic power.</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl">
+                    <div class="p-6">
+                        <div class="text-5xl mb-4 text-white"><i class="fas fa-city"></i></div>
+                        <h3 class="text-xl font-bold mb-2 text-white">On the Map</h3>
+                        <p>PBEL City on the radar of GHMC and Bandlaguda Municipality</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-5xl mb-4 text-white"><i class="fas fa-star"></i></div>
+                        <h3 class="text-xl font-bold mb-2 text-white">Setting the Standard</h3>
+                        <p>Raising the bar for urban communities</p>
+                    </div>
+                    <div class="p-6">
+                        <div class="text-5xl mb-4 text-white"><i class="fas fa-bullhorn"></i></div>
+                        <h3 class="text-xl font-bold mb-2 text-white">A Powerful Voice</h3>
+                        <p>Influencing government decisions for better future</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3.5: Should I Visit? -->
+        <section id="should-i-visit" class="slide bg-white">
+            <div class="w-[90%] h-[90%] flex justify-center items-center">
+                 <img src="https://i.ibb.co/q3BSKRXF/Should-You-Visit.png" alt="A guide to check if you need to update voter ID details." class="max-w-full max-h-full object-contain">
+            </div>
+        </section>
+
+        <!-- Section 4: What We Will Do -->
+        <section id="action" class="slide">
+        </section>
+
+        <!-- Kiosk Information Section -->
+        <section id="kiosk" class="slide text-white">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-4">Visit the Kiosk Today!</h2>
+                <h3>Bring Your Family, Spread the Word </h3>
+                <p class="text-xl md:text-2xl font-semibold mt-4 text-saffron max-w-3xl mx-auto mb-12" style="text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">Take the first step towards a stronger community.</p>
+                
+                <div class="bg-white text-gray-800 rounded-lg shadow-xl p-8 max-w-2xl mx-auto">
+                    <h3 class="text-2xl font-bold text-saffron mb-4">Voter Registration & Update Kiosk</h3>
+                    <p class="text-lg mb-2"><i class="fas fa-map-marker-alt mr-2 text-gray-500"></i> <strong>Location:</strong> PBEL City Clubhouse (Swimming Pool Side)</p>
+                    <p class="text-lg mb-2"><i class="fas fa-calendar mr-2 text-gray-500"></i> <strong>Dates:</strong> June 21 & 22 (Saturday & Sunday)</p>
+                    <p class="text-lg"><i class="fas fa-clock mr-2 text-gray-500"></i> <strong>Hours:</strong> 10:00 AM-1:00 PM & 1:00 PM-04:00 PM</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer is conceptually part of the last slide or could be removed for this design -->
+    <footer class="bg-gray-800 text-white py-2 fixed bottom-0 left-0 right-0 z-50 text-center text-sm">
+        <p>A PBEL Seva Samiti Initiative</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Basic Setup ---
+            const container = document.getElementById('fullpage-container');
+            const slides = document.querySelectorAll('.slide');
+            const dotNav = document.getElementById('dot-navigation');
+            const header = document.querySelector('header');
+            const totalSlides = slides.length;
+            let currentSlide = 0;
+            let isScrolling = false;
+            let section2Timer = null;
+            
+            // --- Create Navigation Dots ---
+            for (let i = 0; i < totalSlides; i++) {
+                const dot = document.createElement('div');
+                dot.classList.add('dot');
+                dot.dataset.slide = i;
+                dotNav.appendChild(dot);
+            }
+            const dots = document.querySelectorAll('.dot');
+
+            // --- Section 2 Filmstrip Animation ---
+            function stopFilmstripAnimation() {
+                if(section2Timer) {
+                    clearInterval(section2Timer);
+                    section2Timer = null;
+                }
+            }
+
+            function startFilmstripAnimation() {
+                stopFilmstripAnimation(); // Reset first
+                const filmstrip = document.querySelector('#problem .filmstrip');
+                if (!filmstrip) return;
+                
+                let currentFrame = 0;
+                const totalFrames = filmstrip.children.length;
+
+                section2Timer = setInterval(() => {
+                    currentFrame = (currentFrame + 1) % totalFrames;
+                    filmstrip.style.transform = `translateX(-${currentFrame * (100 / totalFrames)}%)`;
+                }, 10000); // Change slide every 10 seconds
+            }
+
+            // --- Update UI based on slide ---
+            function updateUI(slideIndex) {
+                // Update active slide class
+                if (slides[currentSlide] && currentSlide !== slideIndex) {
+                    slides[currentSlide].classList.remove('is-active');
+                }
+                slides[slideIndex].classList.add('is-active');
+                
+                // Update dot navigation
+                dots.forEach((d, i) => d.classList.toggle('active', i === slideIndex));
+                
+                // Update side nav colors based on the current slide's background
+                const isDarkSlide = slides[slideIndex].classList.contains('text-white') || slides[slideIndex].querySelector('.filmstrip-viewport');
+                const dotColor = isDarkSlide ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)';
+                document.documentElement.style.setProperty('--dot-bg-color', dotColor);
+
+                // Manage Section 2 animation
+                if (slideIndex === 1) {
+                    startFilmstripAnimation(); 
+                } else {
+                    stopFilmstripAnimation();
+                    const filmstrip = document.querySelector('#problem .filmstrip');
+                    if (filmstrip) filmstrip.style.transform = `translateX(0%)`; // Reset position
+                }
+            }
+
+            // --- Core Navigation Function ---
+            function navigateToSlide(slideIndex) {
+                 if (isScrolling || slideIndex < 0 || slideIndex >= totalSlides) return;
+                
+                isScrolling = true;
+                
+                container.style.transform = `translateY(-${slideIndex * 100}vh)`;
+                
+                currentSlide = slideIndex;
+                updateUI(slideIndex);
+                
+                // Cooldown to prevent spamming
+                setTimeout(() => { isScrolling = false; }, 1200);
+            }
+
+
+            // --- Event Listeners ---
+            dotNav.addEventListener('click', (e) => {
+                if (e.target.classList.contains('dot')) {
+                    navigateToSlide(parseInt(e.target.dataset.slide));
+                }
+            });
+
+            window.addEventListener('wheel', (e) => {
+                if (isScrolling) return;
+                if (e.deltaY > 0) navigateToSlide(currentSlide + 1); // Down
+                else navigateToSlide(currentSlide - 1); // Up
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (isScrolling) return;
+                if (e.key === 'ArrowDown') navigateToSlide(currentSlide + 1);
+                else if (e.key === 'ArrowUp') navigateToSlide(currentSlide - 1);
+            });
+
+            let touchstartY = 0;
+            window.addEventListener('touchstart', e => { touchstartY = e.changedTouches[0].screenY; }, { passive: true });
+            window.addEventListener('touchend', e => {
+                let touchendY = e.changedTouches[0].screenY;
+                if (isScrolling) return;
+                if (touchendY < touchstartY - 50) navigateToSlide(currentSlide + 1); // Swiped up
+                if (touchendY > touchstartY + 50) navigateToSlide(currentSlide - 1); // Swiped down
+            });
+
+
+            // --- Preload Image and Initialize ---
+            function initialize() {
+                const firstSlide = document.getElementById('about');
+                const bgImage = new Image();
+                bgImage.src = 'https://i.ibb.co/tP4HcLs0/Section1.png';
+
+                // Set initial UI state without animation
+                updateUI(0);
+                 // Move to slide 0 without animation class first
+                container.style.transform = `translateY(0vh)`;
+
+                // Once the image is loaded, start the animation on the first slide
+                bgImage.onload = () => {
+                    slides[0].classList.add('is-active');
+                };
+                // Fallback in case the image fails to load
+                bgImage.onerror = () => {
+                    slides[0].classList.add('is-active');
+                };
+            }
+            
+            initialize();
+        });
+    </script>
+</body>
+</html>
